@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="es" class="bg-black">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Repuestos CGS - Catálogo Oficial</title>
+
+    <!-- Tailwind CSS por CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Estilos Personalizados -->
+    <link rel="stylesheet" href="index.css" />
+
+    <!-- Iconos FontAwesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- ESTILOS PARA EL SCROLL INFINITO DE LOGOS -->
+    <style>
+      @keyframes scrollLogos {
+        0% {
+          transform: translateX(0);
+        }
+        100% {
+          transform: translateX(-50%);
+        }
+      }
+      .animate-scroll-logos {
+        display: flex;
+        width: 200%;
+        animation: scrollLogos 25s linear infinite;
+      }
+      .animate-scroll-logos:hover {
+        animation-play-state: paused;
+      }
+    </style>
+    <!-- ESTILOS PARA EL SCROLL INFINITO DE LOGOS -->
+    <style>
+      @keyframes scrollLogos {
+        0% {
+          transform: translateX(0);
+        }
+        100% {
+          transform: translateX(-50%);
+        }
+      }
+      .animate-scroll-logos {
+        display: flex;
+        width: 200%;
+        animation: scrollLogos 25s linear infinite;
+      }
+      .animate-scroll-logos:hover {
+        animation-play-state: paused;
+      }
+    </style>
+
+    <!-- Bloqueo prioritario para ventanas e insignias de Netlify -->
+    <!-- Bloqueo prioritario para ventanas e insignias de Netlify -->
+    <style>
+      #netlify-modal-root,
+      .netlify-badge-promo,
+      .netlify-badge,
+      iframe[src*="netlify"],
+      div[class*="netlify-"],
+      [data-netlify-badge],
+      #netlify-notification {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        height: 0 !important;
+        width: 0 !important;
+      }
+    </style>
+  </head>
+  <body class="bg-slate-50 font-sans pb-0 text-slate-800 m-0 p-0">
+    <!-- HEADER / BUSCADOR (NEGRO) -->
+    <header
+      class="bg-black text-white shadow-xl sticky top-0 z-40 border-b border-zinc-800 py-3"
+    >
+      <div class="max-w-7xl mx-auto px-4">
+        <!-- Fila Única: Logo Izquierda | Buscador Centro | Contactar Derecha -->
+        <div
+          class="flex flex-col md:flex-row items-center justify-between gap-4"
+        >
+          <!-- 1. Logo -->
+          <div class="flex items-center shrink-0">
+            <img
+              src="img/logoCGS.jpeg"
+              alt="Repuestos CGS"
+              class="h-16 sm:h-20 md:h-24 w-auto object-contain rounded-lg"
+            />
+          </div>
+
+          <!-- 2. Buscador en el Medio -->
+          <div class="relative w-full max-w-xl mx-auto">
+            <i
+              class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-zinc-400"
+            ></i>
+            <input
+              type="text"
+              id="input-buscador"
+              placeholder="Buscar por repuesto, modelo o código OEM (ej: Pastillas, Golf, Audi A3)..."
+              class="w-full pl-12 pr-4 py-2.5 bg-zinc-900 text-white rounded-xl border border-zinc-700 focus:outline-none focus:ring-2 focus:ring-zinc-400 placeholder-zinc-500 shadow-inner text-sm"
+            />
+          </div>
+
+          <!-- 3. Botón Contactar -->
+          <div class="shrink-0">
+            <a
+              id="btn-header-wa"
+              href="#"
+              target="_blank"
+              class="bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm px-4 py-2.5 rounded-xl font-semibold flex items-center gap-2 transition shadow-lg hover:scale-105"
+            >
+              <i class="fa-brands fa-whatsapp text-lg"></i> Contactar
+            </a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENIDO PRINCIPAL (BLANCO) -->
+    <main class="max-w-6xl mx-auto px-4 py-8">
+      <!-- BANNER PROMOCIONAL AUTOMÁTICO -->
+      <section
+        class="relative bg-zinc-900 text-white rounded-2xl overflow-hidden mb-8 shadow-xl border border-zinc-800 h-64 sm:h-72 md:h-80"
+      >
+        <div id="carrusel-slides" class="relative w-full h-full">
+          <!-- Las promociones rotan solas aquí -->
+        </div>
+      </section>
+
+      <!-- BARRA DE FILTROS COMBINADOS (MARCA Y CATEGORÍA) -->
+      <div
+        class="mb-8 bg-white p-4 rounded-2xl border border-zinc-200 shadow-sm space-y-4"
+      >
+        <!-- Fila 1: Filtro por Marca -->
+        <div>
+          <div class="flex items-center justify-between border-b pb-2 mb-3">
+            <span
+              class="text-xs font-bold text-zinc-500 uppercase tracking-wider flex items-center gap-2"
+            >
+              <i class="fa-solid fa-car"></i> Filtrar por Marca
+            </span>
+            <button
+              onclick="limpiarTodosFiltros()"
+              class="text-xs text-zinc-500 hover:text-black underline font-medium"
+            >
+              Mostrar todos los repuestos
+            </button>
+          </div>
+
+          <div class="flex flex-wrap gap-2">
+            <button
+              onclick="filtrarPorMarca('Todas', this)"
+              class="btn-filtro-marca bg-black text-white text-xs font-bold px-3.5 py-2 rounded-xl transition"
+            >
+              Todas
+            </button>
+            <button
+              onclick="filtrarPorMarca('Volkswagen', this)"
+              class="btn-filtro-marca bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-xs font-semibold px-3.5 py-2 rounded-xl transition border border-zinc-200"
+            >
+              Volkswagen
+            </button>
+            <button
+              onclick="filtrarPorMarca('Audi', this)"
+              class="btn-filtro-marca bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-xs font-semibold px-3.5 py-2 rounded-xl transition border border-zinc-200"
+            >
+              Audi
+            </button>
+            <button
+              onclick="filtrarPorMarca('Cupra', this)"
+              class="btn-filtro-marca bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-xs font-semibold px-3.5 py-2 rounded-xl transition border border-zinc-200"
+            >
+              Cupra
+            </button>
+            <button
+              onclick="filtrarPorMarca('Seat', this)"
+              class="btn-filtro-marca bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-xs font-semibold px-3.5 py-2 rounded-xl transition border border-zinc-200"
+            >
+              Seat
+            </button>
+            <button
+              onclick="filtrarPorMarca('Škoda', this)"
+              class="btn-filtro-marca bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-xs font-semibold px-3.5 py-2 rounded-xl transition border border-zinc-200"
+            >
+              Škoda
+            </button>
+          </div>
+        </div>
+
+        <!-- Fila 2: Filtro por Categoría -->
+        <div class="pt-2 border-t border-zinc-100">
+          <span
+            class="text-xs font-bold text-zinc-500 uppercase tracking-wider block mb-3 flex items-center gap-2"
+          >
+            <i class="fa-solid fa-layer-group"></i> Filtrar por Categoría
+          </span>
+
+          <div class="flex flex-wrap gap-2">
+            <button
+              onclick="filtrarPorCategoria('Todas', this)"
+              class="btn-categoria bg-black text-white text-xs font-bold px-3.5 py-1.5 rounded-xl transition"
+            >
+              Todas
+            </button>
+            <button
+              onclick="filtrarPorCategoria('Motor', this)"
+              class="btn-categoria bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-xs font-semibold px-3.5 py-1.5 rounded-xl transition border border-zinc-200"
+            >
+              Motor
+            </button>
+            <button
+              onclick="filtrarPorCategoria('Cambio', this)"
+              class="btn-categoria bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-xs font-semibold px-3.5 py-1.5 rounded-xl transition border border-zinc-200"
+            >
+              Cambio
+            </button>
+            <button
+              onclick="filtrarPorCategoria('Suspensión', this)"
+              class="btn-categoria bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-xs font-semibold px-3.5 py-1.5 rounded-xl transition border border-zinc-200"
+            >
+              Suspensión
+            </button>
+            <button
+              onclick="filtrarPorCategoria('Frenos', this)"
+              class="btn-categoria bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-xs font-semibold px-3.5 py-1.5 rounded-xl transition border border-zinc-200"
+            >
+              Frenos
+            </button>
+            <button
+              onclick="filtrarPorCategoria('Sistema Eléctrico', this)"
+              class="btn-categoria bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-xs font-semibold px-3.5 py-1.5 rounded-xl transition border border-zinc-200"
+            >
+              Sistema Eléctrico
+            </button>
+            <button
+              onclick="filtrarPorCategoria('Carrocería', this)"
+              class="btn-categoria bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-xs font-semibold px-3.5 py-1.5 rounded-xl transition border border-zinc-200"
+            >
+              Carrocería
+            </button>
+            <button
+              onclick="filtrarPorCategoria('Filtros', this)"
+              class="btn-categoria bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-xs font-semibold px-3.5 py-1.5 rounded-xl transition border border-zinc-200"
+            >
+              Filtros
+            </button>
+            <button
+              onclick="filtrarPorCategoria('Mantención', this)"
+              class="btn-categoria bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-xs font-semibold px-3.5 py-1.5 rounded-xl transition border border-zinc-200"
+            >
+              Mantención
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Catálogo de Productos -->
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl font-bold text-zinc-900">Catálogo de Repuestos</h3>
+        <span class="text-xs text-zinc-500"
+          >Haz clic en un repuesto para pedirlo por WhatsApp</span
+        >
+      </div>
+
+      <div
+        id="grid-productos"
+        class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+      >
+        <!-- Se carga dinámicamente desde index.js -->
+      </div>
+    </main>
+
+    <!-- CARRUSEL DE MARCAS DINÁMICO -->
+    <section
+      id="sec-carrusel-marcas"
+      class="hidden py-16 bg-zinc-900 border-t border-b border-zinc-800 overflow-hidden my-12"
+    >
+      <div class="max-w-7xl mx-auto px-4 mb-8 text-center">
+        <span class="text-xs font-bold text-zinc-400 uppercase tracking-widest">
+          Trabajamos con las mejores marcas del mercado
+        </span>
+      </div>
+
+      <div class="relative w-full overflow-hidden">
+        <!-- Sombras laterales para difuminar bordes -->
+        <div
+          class="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-zinc-900 to-transparent z-10 pointer-events-none"
+        ></div>
+        <div
+          class="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-zinc-900 to-transparent z-10 pointer-events-none"
+        ></div>
+
+        <div class="animate-scroll-logos items-center gap-12 sm:gap-16">
+          <div
+            id="carrusel-marcas-tanda1"
+            class="flex items-center justify-around gap-12 sm:gap-16 shrink-0 w-1/2"
+          ></div>
+          <div
+            id="carrusel-marcas-tanda2"
+            class="flex items-center justify-around gap-12 sm:gap-16 shrink-0 w-1/2"
+          ></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER PRINCIPAL (NEGRO COMPLETO HASTA ABAJO) -->
+    <footer class="bg-black text-white pt-10 pb-8 border-t border-zinc-800">
+      <div
+        class="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8 mb-8"
+      >
+        <!-- Columna 1: Info de la Empresa -->
+        <div>
+          <img
+            src="img/logoCGS.jpeg"
+            alt="Repuestos CGS"
+            class="h-16 w-auto object-contain rounded-lg mb-4"
+          />
+          <p class="text-xs text-zinc-400 leading-relaxed">
+            Especialistas en repuestos e insumos para vehículos del Grupo VAG:
+            Volkswagen, Audi, Cupra, Seat y Škoda.
+          </p>
+        </div>
+
+        <!-- Columna 2: Marcas Atendidas -->
+        <div>
+          <h4
+            class="text-sm font-bold text-white uppercase tracking-wider mb-4"
+          >
+            Especialistas en
+          </h4>
+          <ul class="text-xs text-zinc-400 space-y-2">
+            <li class="flex items-center gap-2">
+              <i class="fa-solid fa-check text-zinc-500 text-[10px]"></i>
+              Volkswagen (Golf, Vento, Polo, Amarok)
+            </li>
+            <li class="flex items-center gap-2">
+              <i class="fa-solid fa-check text-zinc-500 text-[10px]"></i> Audi
+              (A3, A4, Q3, Q5)
+            </li>
+            <li class="flex items-center gap-2">
+              <i class="fa-solid fa-check text-zinc-500 text-[10px]"></i> Cupra
+              (Formentor, Leon)
+            </li>
+            <li class="flex items-center gap-2">
+              <i class="fa-solid fa-check text-zinc-500 text-[10px]"></i> Seat
+              (Leon, Ibiza, Ateca)
+            </li>
+            <li class="flex items-center gap-2">
+              <i class="fa-solid fa-check text-zinc-500 text-[10px]"></i> Škoda
+              (Octavia, Fabia)
+            </li>
+          </ul>
+        </div>
+
+        <!-- Columna 3: Contacto Directo -->
+        <div>
+          <h4
+            class="text-sm font-bold text-white uppercase tracking-wider mb-4"
+          >
+            Contáctanos
+          </h4>
+          <div class="space-y-3 text-xs text-zinc-400">
+            <p class="flex items-center gap-2">
+              <i class="fa-brands fa-whatsapp text-green-500 text-base"></i>
+              <span
+                >Ventas WhatsApp:
+                <strong>+56 9 51681896 +56 9 03377836</strong></span
+              >
+            </p>
+            <p class="flex items-center gap-2">
+              <i class="fa-solid fa-clock text-zinc-400"></i>
+              <span>Atención: Lunes a Viernes (09:00 - 18:00 hrs)</span>
+            </p>
+            <p class="flex items-center gap-2">
+              <i class="fa-solid fa-location-dot text-zinc-400"></i>
+              <span>Santiago, Chile (Envíos a regiones)</span>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Copyright / Derechos -->
+      <div
+        class="max-w-6xl mx-auto px-4 pt-6 border-t border-zinc-800 text-center text-xs text-zinc-500"
+      >
+        <p>© 2026 Repuestos CGS - Tienda online.</p>
+      </div>
+    </footer>
+
+    <!-- BOTÓN FLOTANTE WHATSAPP -->
+    <a
+      id="btn-wa-flotante"
+      href="#"
+      target="_blank"
+      class="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 text-white p-4 rounded-full shadow-2xl z-50 flex items-center justify-center transition hover:scale-110"
+      title="Consultar por WhatsApp"
+    >
+      <i class="fa-brands fa-whatsapp text-3xl"></i>
+    </a>
+
+    <!-- Script JS -->
+    <script src="index.js"></script>
+  </body>
+</html>

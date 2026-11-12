@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="es" class="bg-black text-white">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Repuestos CGS - Panel de Administración</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-zinc-950 font-sans min-h-screen pb-12">
+
+  <!-- PANTALLA DE LOGIN -->
+  <div id="sec-login" class="flex items-center justify-center min-h-screen px-4">
+    <div class="bg-zinc-900 border border-zinc-800 p-8 rounded-2xl max-w-md w-full shadow-2xl text-center">
+      <img src="img/logoCGS.jpeg" alt="Logo CGS" class="h-20 mx-auto mb-4 rounded-lg object-contain">
+      <h2 class="text-xl font-bold mb-1">Acceso Administrador</h2>
+      <p class="text-xs text-zinc-400 mb-6">Ingresa la clave para gestionar el catálogo</p>
+      
+      <form id="form-login" onsubmit="validarClave(event)" class="space-y-4">
+        <input 
+          type="password" 
+          id="input-pass" 
+          placeholder="Contraseña de acceso" 
+          class="w-full px-4 py-3 bg-black border border-zinc-700 rounded-xl text-white text-sm focus:outline-none focus:border-green-500 shadow-inner"
+          required
+        >
+        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl transition text-sm">
+          Ingresar al Panel
+        </button>
+      </form>
+      <p id="msg-error" class="text-xs text-red-500 mt-3 hidden">Contraseña incorrecta. Intenta nuevamente.</p>
+    </div>
+  </div>
+
+  <!-- PANEL DE ADMINISTRACIÓN -->
+  <div id="sec-admin" class="hidden max-w-6xl mx-auto px-4 py-8">
+    
+    <!-- Header Admin -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-zinc-800 pb-4 mb-6">
+      <div>
+        <h1 class="text-2xl font-extrabold flex items-center gap-2">
+          <i class="fa-solid fa-gears text-green-500"></i> Panel de Administración
+        </h1>
+        <p class="text-xs text-zinc-400">Repuestos CGS - Control Total del Sitio</p>
+      </div>
+      <div class="flex gap-3">
+        <a href="index.html" target="_blank" class="bg-zinc-800 hover:bg-zinc-700 text-xs text-white px-4 py-2.5 rounded-xl font-semibold transition flex items-center gap-1.5">
+          <i class="fa-solid fa-eye"></i> Ver Catálogo
+        </a>
+        <button onclick="cerrarSesion()" class="bg-red-950 hover:bg-red-900 border border-red-800 text-xs text-red-300 px-4 py-2.5 rounded-xl font-semibold transition">
+          Salir
+        </button>
+      </div>
+    </div>
+
+    <!-- Pestañas para Cambiar entre Repuestos, Promociones y Marcas -->
+    <div class="flex gap-2 border-b border-zinc-800 mb-6">
+      <button id="tab-btn-repuestos" onclick="cambiarPestana('repuestos')" class="px-5 py-2.5 font-bold text-xs rounded-t-xl bg-zinc-800 text-white border-t border-x border-zinc-700">
+        <i class="fa-solid fa-boxes-stacked mr-1.5"></i> Inventario de Repuestos
+      </button>
+      <button id="tab-btn-promos" onclick="cambiarPestana('promos')" class="px-5 py-2.5 font-bold text-xs rounded-t-xl bg-zinc-900 text-zinc-400 hover:text-white transition">
+        <i class="fa-solid fa-rectangle-ad mr-1.5 text-yellow-500"></i> Banners del Carrusel
+      </button>
+      <button id="tab-btn-marcas" onclick="cambiarPestana('marcas')" class="px-5 py-2.5 font-bold text-xs rounded-t-xl bg-zinc-900 text-zinc-400 hover:text-white transition">
+        <i class="fa-solid fa-award mr-1.5 text-yellow-500"></i> Logos de Marcas
+      </button>
+    </div>
+
+    <!-- SECCIÓN 1: REPUESTOS (INVENTARIO) -->
+    <div id="pestana-repuestos" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- Formulario de Repuestos -->
+      <div class="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl h-fit shadow-xl">
+        <h3 class="font-bold text-lg border-b border-zinc-800 pb-3 mb-4 flex items-center gap-2">
+          <i class="fa-solid fa-plus text-green-500"></i> Agregar Nuevo Repuesto
+        </h3>
+        
+        <form id="form-nuevo-producto" onsubmit="guardarNuevoProducto(event)" class="space-y-4 text-xs">
+          <div>
+            <label class="block font-semibold mb-1 text-zinc-300">Nombre del Repuesto *</label>
+            <input type="text" id="p-nombre" placeholder="Ej: Pastillas de Freno Delanteras" class="w-full p-2.5 bg-black border border-zinc-700 rounded-lg text-white" required>
+          </div>
+
+          <div>
+            <label class="block font-semibold mb-1 text-zinc-300">Código OEM / Referencia *</label>
+            <input type="text" id="p-codigo" placeholder="Ej: OEM-5Q0698151" class="w-full p-2.5 bg-black border border-zinc-700 rounded-lg text-white" required>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block font-semibold mb-1 text-zinc-300">Marca VAG *</label>
+              <select id="p-marca" class="w-full p-2.5 bg-black border border-zinc-700 rounded-lg text-white" required>
+                <option value="VW">Volkswagen</option>
+                <option value="Audi">Audi</option>
+                <option value="Cupra">Cupra</option>
+                <option value="Seat">Seat</option>
+                <option value="Škoda">Škoda</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-semibold mb-1 text-zinc-300">Categoría *</label>
+              <select id="p-categoria" class="w-full p-2.5 bg-black border border-zinc-700 rounded-lg text-white" required>
+                <option value="Motor">Motor</option>
+                <option value="Cambio">Cambio</option>
+                <option value="Suspensión">Suspensión</option>
+                <option value="Frenos">Frenos</option>
+                <option value="Sistema Eléctrico">Sistema Eléctrico</option>
+                <option value="Carrocería">Carrocería</option>
+                <option value="Filtros">Filtros</option>
+                <option value="Mantención">Mantención</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-semibold mb-1 text-zinc-300">Compatibilidad *</label>
+            <input type="text" id="p-compatibilidad" placeholder="Ej: VW Golf Mk7 / Audi A3 (2015-2020)" class="w-full p-2.5 bg-black border border-zinc-700 rounded-lg text-white" required>
+          </div>
+
+          <!-- BOTÓN SUBIR IMAGEN -->
+          <div>
+            <label class="block font-semibold mb-1 text-zinc-300">Foto del Repuesto *</label>
+            <input 
+              type="file" 
+              id="p-file" 
+              accept="image/*" 
+              class="w-full p-2 bg-black border border-zinc-700 rounded-lg text-white text-xs file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:bg-zinc-800 file:text-white hover:file:bg-zinc-700 cursor-pointer"
+              required
+            >
+          </div>
+
+          <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl transition text-sm mt-2">
+            Guardar Repuesto
+          </button>
+        </form>
+      </div>
+
+      <!-- Listado de Repuestos -->
+      <div class="lg:col-span-2 bg-zinc-900 border border-zinc-800 p-6 rounded-2xl shadow-xl">
+        <div class="flex justify-between items-center border-b border-zinc-800 pb-3 mb-4">
+          <h3 class="font-bold text-lg flex items-center gap-2">
+            <i class="fa-solid fa-list text-green-500"></i> Repuestos en Inventario
+          </h3>
+          <span id="cant-productos" class="text-xs bg-zinc-800 border border-zinc-700 text-zinc-300 px-3 py-1 rounded-lg">0 Repuestos</span>
+        </div>
+
+        <div id="tabla-admin" class="space-y-3 max-h-[600px] overflow-y-auto pr-1">
+          <!-- Carga dinámicamente -->
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SECCIÓN 2: BANNER / CARRUSEL (PROMOCIONES) -->
+    <div id="pestana-promos" class="grid grid-cols-1 lg:grid-cols-3 gap-8 hidden">
+      
+      <!-- Formulario Promociones -->
+      <div class="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl h-fit shadow-xl">
+        <h3 class="font-bold text-lg border-b border-zinc-800 pb-3 mb-4 flex items-center gap-2 text-yellow-500">
+          <i class="fa-solid fa-plus"></i> Nueva Promo para Carrusel
+        </h3>
+        
+        <form id="form-nueva-promo" onsubmit="guardarNuevaPromo(event)" class="space-y-4 text-xs">
+          <div>
+            <label class="block font-semibold mb-1 text-zinc-300">Etiqueta (Tag superior) *</label>
+            <input type="text" id="promo-tag" placeholder="Ej: Oferta del Mes, Mantención, Descuento" class="w-full p-2.5 bg-black border border-zinc-700 rounded-lg text-white" required>
+          </div>
+
+          <div>
+            <label class="block font-semibold mb-1 text-zinc-300">Título de la Promoción *</label>
+            <input type="text" id="promo-titulo" placeholder="Ej: Kit de Distribución + Bomba de Agua" class="w-full p-2.5 bg-black border border-zinc-700 rounded-lg text-white" required>
+          </div>
+
+          <div>
+            <label class="block font-semibold mb-1 text-zinc-300">Descripción Corta *</label>
+            <textarea id="promo-descripcion" rows="2" placeholder="Ej: Incluye correas y tensores con 15% dcto." class="w-full p-2.5 bg-black border border-zinc-700 rounded-lg text-white" required></textarea>
+          </div>
+
+          <div>
+            <label class="block font-semibold mb-1 text-zinc-300">Texto del Botón *</label>
+            <input type="text" id="promo-boton" placeholder="Ej: Cotizar Kit por WhatsApp" class="w-full p-2.5 bg-black border border-zinc-700 rounded-lg text-white" required>
+          </div>
+
+          <!-- BOTÓN SUBIR IMAGEN BANNER -->
+          <div>
+            <label class="block font-semibold mb-1 text-zinc-300">Imagen de Fondo *</label>
+            <input 
+              type="file" 
+              id="promo-file" 
+              accept="image/*" 
+              class="w-full p-2 bg-black border border-zinc-700 rounded-lg text-white text-xs file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:bg-zinc-800 file:text-white hover:file:bg-zinc-700 cursor-pointer"
+              required
+            >
+          </div>
+
+          <button type="submit" class="w-full bg-yellow-600 hover:bg-yellow-700 text-black font-bold py-3 rounded-xl transition text-sm mt-2">
+            Guardar Promo en Carrusel
+          </button>
+        </form>
+      </div>
+
+      <!-- Listado Promociones Carrusel -->
+      <div class="lg:col-span-2 bg-zinc-900 border border-zinc-800 p-6 rounded-2xl shadow-xl">
+        <div class="flex justify-between items-center border-b border-zinc-800 pb-3 mb-4">
+          <h3 class="font-bold text-lg flex items-center gap-2">
+            <i class="fa-solid fa-rectangle-ad text-yellow-500"></i> Banners Activos en el Carrusel
+          </h3>
+          <span id="cant-promos" class="text-xs bg-zinc-800 border border-zinc-700 text-zinc-300 px-3 py-1 rounded-lg">0 Promos</span>
+        </div>
+
+        <div id="tabla-admin-promos" class="space-y-4 max-h-[600px] overflow-y-auto pr-1">
+          <!-- Carga dinámicamente -->
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SECCIÓN 3: LOGOS DE MARCAS -->
+    <div id="pestana-marcas" class="grid grid-cols-1 lg:grid-cols-3 gap-8 hidden">
+      
+      <!-- Formulario Marcas -->
+      <div class="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl h-fit shadow-xl">
+        <h3 class="font-bold text-lg border-b border-zinc-800 pb-3 mb-4 flex items-center gap-2 text-yellow-500">
+          <i class="fa-solid fa-plus"></i> Nueva Marca / Logo
+        </h3>
+        
+        <form id="form-nueva-marca" onsubmit="guardarNuevaMarca(event)" class="space-y-4 text-xs">
+          <div>
+            <label class="block font-semibold mb-1 text-zinc-300">Nombre de la Marca *</label>
+            <input type="text" id="marca-nombre" placeholder="Ej: Brembo, Bosch, Mann Filter" class="w-full p-2.5 bg-black border border-zinc-700 rounded-lg text-white" required>
+          </div>
+
+          <div>
+            <label class="block font-semibold mb-1 text-zinc-300">Logo / Imagen *</label>
+            <input 
+              type="file" 
+              id="marca-file" 
+              accept="image/*" 
+              class="w-full p-2 bg-black border border-zinc-700 rounded-lg text-white text-xs file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:bg-zinc-800 file:text-white hover:file:bg-zinc-700 cursor-pointer"
+              required
+            >
+          </div>
+
+          <button type="submit" class="w-full bg-yellow-600 hover:bg-yellow-700 text-black font-bold py-3 rounded-xl transition text-sm mt-2">
+            Guardar Logo de Marca
+          </button>
+        </form>
+      </div>
+
+      <!-- Listado Logos de Marcas -->
+      <div class="lg:col-span-2 bg-zinc-900 border border-zinc-800 p-6 rounded-2xl shadow-xl">
+        <div class="flex justify-between items-center border-b border-zinc-800 pb-3 mb-4">
+          <h3 class="font-bold text-lg flex items-center gap-2">
+            <i class="fa-solid fa-award text-yellow-500"></i> Logos de Marcas Activas
+          </h3>
+          <span id="cant-marcas" class="text-xs bg-zinc-800 border border-zinc-700 text-zinc-300 px-3 py-1 rounded-lg">0 Marcas</span>
+        </div>
+
+        <div id="tabla-admin-marcas" class="grid grid-cols-2 sm:grid-cols-3 gap-4 max-h-[600px] overflow-y-auto pr-1">
+          <!-- Carga dinámicamente -->
+        </div>
+      </div>
+
+    </div>
+
+  </div> <!-- Cierra el contenedor general del admin -->
+
+
+<script>
+    // ==========================================
+    // CONFIGURACIÓN SUPABASE & ADMIN
+    // ==========================================
+    const CLAVE_ADMIN = "cgs2026";
+    const SUPABASE_URL = 'https://gjtwlmpucylosttexfdq.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdqdHdsbXB1Y3lsb3N0dGV4ZmRxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQyNDQ3MTgsImV4cCI6MjEwOTgyMDcxOH0.3IJ60M0T5_U-xTt4JCmXkwDy61yDOAEjqUISoRA4GV0';
+
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    function validarClave(e) {
+      e.preventDefault();
+      const pass = document.getElementById('input-pass').value;
+      if (pass === CLAVE_ADMIN) {
+        document.getElementById('sec-login').classList.add('hidden');
+        document.getElementById('sec-admin').classList.remove('hidden');
+        renderizarTablaAdmin();
+        renderizarTablaPromos();
+        renderizarTablaMarcas();
+      } else {
+        document.getElementById('msg-error').classList.remove('hidden');
+      }
+    }
+
+    function cerrarSesion() {
+      document.getElementById('sec-admin').classList.add('hidden');
+      document.getElementById('sec-login').classList.remove('hidden');
+      document.getElementById('input-pass').value = '';
+    }
+
+    function cambiarPestana(pestana) {
+      const btnRep = document.getElementById('tab-btn-repuestos');
+      const btnPro = document.getElementById('tab-btn-promos');
+      const btnMar = document.getElementById('tab-btn-marcas');
+
+      const secRep = document.getElementById('pestana-repuestos');
+      const secPro = document.getElementById('pestana-promos');
+      const secMar = document.getElementById('pestana-marcas');
+
+      // Ocultar todas las secciones
+      secRep.classList.add('hidden');
+      secPro.classList.add('hidden');
+      secMar.classList.add('hidden');
+
+      // Estilos base para pestañas inactivas
+      btnRep.className = "px-5 py-2.5 font-bold text-xs rounded-t-xl bg-zinc-900 text-zinc-400 hover:text-white transition";
+      btnPro.className = "px-5 py-2.5 font-bold text-xs rounded-t-xl bg-zinc-900 text-zinc-400 hover:text-white transition";
+      btnMar.className = "px-5 py-2.5 font-bold text-xs rounded-t-xl bg-zinc-900 text-zinc-400 hover:text-white transition";
+
+      // Activar sección seleccionada
+      if (pestana === 'repuestos') {
+        secRep.classList.remove('hidden');
+        btnRep.className = "px-5 py-2.5 font-bold text-xs rounded-t-xl bg-zinc-800 text-white border-t border-x border-zinc-700";
+      } else if (pestana === 'promos') {
+        secPro.classList.remove('hidden');
+        btnPro.className = "px-5 py-2.5 font-bold text-xs rounded-t-xl bg-zinc-800 text-white border-t border-x border-zinc-700";
+      } else if (pestana === 'marcas') {
+        secMar.classList.remove('hidden');
+        btnMar.className = "px-5 py-2.5 font-bold text-xs rounded-t-xl bg-zinc-800 text-white border-t border-x border-zinc-700";
+        renderizarTablaMarcas();
+      }
+    }
+
+    // ==========================================
+    // SECCIÓN REPUESTOS (SUPABASE)
+    // ==========================================
+    async function guardarNuevoProducto(e) {
+      e.preventDefault();
+      const fileInput = document.getElementById('p-file');
+      const file = fileInput.files[0];
+
+      if (!file) {
+        alert("Por favor selecciona una foto para el repuesto.");
+        return;
+      }
+
+      try {
+        const nombreArchivo = `repuesto_${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
+        const { data: imgData, error: imgError } = await _supabase.storage
+          .from('imagenes')
+          .upload(nombreArchivo, file);
+
+        if (imgError) throw imgError;
+
+        const { data: urlData } = _supabase.storage
+          .from('imagenes')
+          .getPublicUrl(nombreArchivo);
+
+        const urlImagen = urlData.publicUrl;
+
+        const nuevo = {
+          nombre: document.getElementById('p-nombre').value,
+          codigo: document.getElementById('p-codigo').value,
+          marca: document.getElementById('p-marca').value,
+          categoria: document.getElementById('p-categoria').value,
+          compatibilidad: document.getElementById('p-compatibilidad').value,
+          imagen: urlImagen
+        };
+
+        const { error: dbError } = await _supabase
+          .from('productos')
+          .insert([nuevo]);
+
+        if (dbError) throw dbError;
+
+        document.getElementById('form-nuevo-producto').reset();
+        await renderizarTablaAdmin();
+        alert("¡Repuesto agregado con éxito a la nube!");
+      } catch (err) {
+        console.error('Error al guardar repuesto:', err);
+        alert('Hubo un error al subir el repuesto. Inténtalo de nuevo.');
+      }
+    }
+
+    async function eliminarRepuestoAdmin(id) {
+      if (confirm("¿Seguro que deseas eliminar este repuesto de la nube?")) {
+        try {
+          const { error } = await _supabase
+            .from('productos')
+            .delete()
+            .eq('id', id);
+
+          if (error) throw error;
+          await renderizarTablaAdmin();
+        } catch (err) {
+          console.error('Error al eliminar repuesto:', err);
+          alert('No se pudo eliminar el repuesto.');
+        }
+      }
+    }
+
+    async function renderizarTablaAdmin() {
+      const contenedor = document.getElementById('tabla-admin');
+      const contador = document.getElementById('cant-productos');
+
+      try {
+        const { data: prods, error } = await _supabase
+          .from('productos')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        if (contador) contador.innerText = `${prods ? prods.length : 0} Repuestos`;
+        if (!contenedor) return;
+
+        contenedor.innerHTML = '';
+        if (!prods || prods.length === 0) {
+          contenedor.innerHTML = `<p class="text-zinc-500 text-xs text-center py-8">No hay repuestos registrados en la nube.</p>`;
+          return;
+        }
+
+        prods.forEach(p => {
+          contenedor.innerHTML += `
+            <div class="flex items-center justify-between bg-black border border-zinc-800 p-3 rounded-xl gap-4">
+              <img src="${p.imagen}" alt="${p.nombre}" class="w-12 h-12 rounded-lg object-cover bg-zinc-900 border border-zinc-800 shrink-0">
+              <div class="flex-1 min-w-0">
+                <span class="text-[10px] font-bold text-zinc-400 bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded">${p.codigo} | ${p.marca} | ${p.categoria}</span>
+                <h4 class="font-bold text-white text-xs truncate mt-1">${p.nombre}</h4>
+                <p class="text-zinc-500 text-[11px] truncate">${p.compatibilidad || ''}</p>
+              </div>
+              <button onclick="eliminarRepuestoAdmin(${p.id})" class="bg-red-950/60 hover:bg-red-900 text-red-400 border border-red-800/50 p-2.5 rounded-lg transition text-xs shrink-0">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </div>
+          `;
+        });
+      } catch (err) {
+        console.error('Error al renderizar repuestos:', err);
+      }
+    }
+
+    // ==========================================
+    // SECCIÓN PROMOCIONES (SUPABASE)
+    // ==========================================
+    async function guardarNuevaPromo(e) {
+      e.preventDefault();
+      const fileInput = document.getElementById('promo-file');
+      const file = fileInput.files[0];
+
+      if (!file) {
+        alert("Por favor selecciona una imagen de fondo.");
+        return;
+      }
+
+      try {
+        const nombreArchivo = `promo_${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
+        const { data: imgData, error: imgError } = await _supabase.storage
+          .from('imagenes')
+          .upload(nombreArchivo, file);
+
+        if (imgError) throw imgError;
+
+        const { data: urlData } = _supabase.storage
+          .from('imagenes')
+          .getPublicUrl(nombreArchivo);
+
+        const urlImagen = urlData.publicUrl;
+
+        const nueva = {
+          tag: document.getElementById('promo-tag').value,
+          titulo: document.getElementById('promo-titulo').value,
+          descripcion: document.getElementById('promo-descripcion').value,
+          boton: document.getElementById('promo-boton').value,
+          imagen: urlImagen
+        };
+
+        const { error: dbError } = await _supabase
+          .from('promociones')
+          .insert([nueva]);
+
+        if (dbError) throw dbError;
+
+        document.getElementById('form-nueva-promo').reset();
+        await renderizarTablaPromos();
+        alert("¡Promoción agregada al carrusel con éxito!");
+      } catch (err) {
+        console.error('Error al guardar promoción:', err);
+        alert('Hubo un error al subir la promoción.');
+      }
+    }
+
+    async function eliminarPromoAdmin(id) {
+      if (confirm("¿Seguro que deseas eliminar este banner de la nube?")) {
+        try {
+          const { error } = await _supabase
+            .from('promociones')
+            .delete()
+            .eq('id', id);
+
+          if (error) throw error;
+          await renderizarTablaPromos();
+        } catch (err) {
+          console.error('Error al eliminar promoción:', err);
+          alert('No se pudo eliminar la promoción.');
+        }
+      }
+    }
+
+    async function renderizarTablaPromos() {
+      const contenedor = document.getElementById('tabla-admin-promos');
+      const contador = document.getElementById('cant-promos');
+
+      try {
+        const { data: promos, error } = await _supabase
+          .from('promociones')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        if (contador) contador.innerText = `${promos ? promos.length : 0} Promos`;
+        if (!contenedor) return;
+
+        contenedor.innerHTML = '';
+        if (!promos || promos.length === 0) {
+          contenedor.innerHTML = `<p class="text-zinc-500 text-xs text-center py-8">No hay promociones registradas para el carrusel.</p>`;
+          return;
+        }
+
+        promos.forEach(p => {
+          contenedor.innerHTML += `
+            <div class="relative bg-black border border-zinc-800 rounded-xl overflow-hidden p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div class="flex items-center gap-4 flex-1 min-w-0">
+                <img src="${p.imagen}" class="w-20 h-16 rounded-lg object-cover border border-zinc-700 shrink-0">
+                <div class="min-w-0">
+                  <span class="text-[9px] font-bold uppercase bg-yellow-500/20 text-yellow-300 border border-yellow-500/40 px-2 py-0.5 rounded">${p.tag}</span>
+                  <h4 class="font-bold text-white text-sm truncate mt-1">${p.titulo}</h4>
+                  <p class="text-zinc-400 text-xs truncate">${p.descripcion || ''}</p>
+                </div>
+              </div>
+              <button onclick="eliminarPromoAdmin(${p.id})" class="bg-red-950/60 hover:bg-red-900 text-red-400 border border-red-800/50 p-2.5 rounded-lg transition text-xs shrink-0 self-end sm:self-center">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </div>
+          `;
+        });
+      } catch (err) {
+        console.error('Error al renderizar promociones:', err);
+      }
+    }
+
+    // ==========================================
+    // SECCIÓN LOGOS DE MARCAS (SUPABASE)
+    // ==========================================
+    async function guardarNuevaMarca(e) {
+      e.preventDefault();
+      const fileInput = document.getElementById('marca-file');
+      const file = fileInput.files[0];
+
+      if (!file) {
+        alert("Por favor selecciona una imagen para la marca.");
+        return;
+      }
+
+      try {
+        const nombreArchivo = `marca_${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
+        const { data: imgData, error: imgError } = await _supabase.storage
+          .from('imagenes')
+          .upload(nombreArchivo, file);
+
+        if (imgError) throw imgError;
+
+        const { data: urlData } = _supabase.storage
+          .from('imagenes')
+          .getPublicUrl(nombreArchivo);
+
+        const urlImagen = urlData.publicUrl;
+
+        const nueva = {
+          nombre: document.getElementById('marca-nombre').value,
+          imagen: urlImagen
+        };
+
+        const { error: dbError } = await _supabase
+          .from('marcas')
+          .insert([nueva]);
+
+        if (dbError) throw dbError;
+
+        document.getElementById('form-nueva-marca').reset();
+        await renderizarTablaMarcas();
+        alert("¡Logo de marca agregado con éxito!");
+      } catch (err) {
+        console.error('Error al guardar marca:', err);
+        alert('Hubo un error al subir el logo de la marca.');
+      }
+    }
+
+    async function eliminarMarcaAdmin(id) {
+      if (confirm("¿Seguro que deseas eliminar esta marca de la nube?")) {
+        try {
+          const { error } = await _supabase
+            .from('marcas')
+            .delete()
+            .eq('id', id);
+
+          if (error) throw error;
+          await renderizarTablaMarcas();
+        } catch (err) {
+          console.error('Error al eliminar marca:', err);
+          alert('No se pudo eliminar la marca.');
+        }
+      }
+    }
+
+    async function renderizarTablaMarcas() {
+      const contenedor = document.getElementById('tabla-admin-marcas');
+      const contador = document.getElementById('cant-marcas');
+
+      try {
+        const { data: marcas, error } = await _supabase
+          .from('marcas')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        if (contador) contador.innerText = `${marcas ? marcas.length : 0} Marcas`;
+        if (!contenedor) return;
+
+        contenedor.innerHTML = '';
+        if (!marcas || marcas.length === 0) {
+          contenedor.innerHTML = `<p class="text-zinc-500 text-xs text-center py-8 col-span-full">No hay marcas registradas en la nube.</p>`;
+          return;
+        }
+
+        marcas.forEach(m => {
+          contenedor.innerHTML += `
+            <div class="bg-black border border-zinc-800 p-3 rounded-xl flex items-center justify-between gap-3">
+              <div class="flex items-center gap-3 min-w-0">
+                <img src="${m.imagen}" alt="${m.nombre}" class="w-10 h-10 object-contain bg-zinc-900 border border-zinc-800 rounded-lg p-1 shrink-0">
+                <h4 class="font-bold text-white text-xs truncate">${m.nombre}</h4>
+              </div>
+              <button onclick="eliminarMarcaAdmin(${m.id})" class="bg-red-950/60 hover:bg-red-900 text-red-400 border border-red-800/50 p-2.5 rounded-lg transition text-xs shrink-0">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </div>
+          `;
+        });
+      } catch (err) {
+        console.error('Error al renderizar marcas:', err);
+      }
+    }
+  </script>
+</body>
+</html>

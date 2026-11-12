@@ -1,0 +1,46 @@
+/* Estilos personalizados para Repuestos CGS */
+
+.card-producto {
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.card-producto:hover {
+  transform: translateY(-3px);
+}
+
+#btn-wa-flotante {
+  transition:
+    transform 0.2s ease,
+    background-color 0.2s ease;
+}
+
+/* Scrollbar personalizado estilo VAG Oscuro */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #090a0f;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3f3f46;
+}
+/* Ocultar elementos flotantes y promocionales de Netlify */
+#netlify-modal-root,
+.netlify-badge-promo,
+.netlify-badge,
+iframe[src*="netlify"],
+div[class*="netlify-"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
