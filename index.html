@@ -76,6 +76,18 @@
         width: 0 !important;
       }
     </style>
+    <style>
+  /* Oculta el contenedor exacto del Netlify Drawer y la barra flotante */
+  netlify-drawer,
+  iframe[src*="app.netlify.com"],
+  div[class*="drawer"],
+  [id*="netlify"] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+</style>
   </head>
   <body class="bg-slate-50 font-sans pb-0 text-slate-800 m-0 p-0">
     <!-- HEADER / BUSCADOR (NEGRO) -->
@@ -409,4 +421,24 @@
     <!-- Script JS -->
     <script src="index.js"></script>
   </body>
+  <script>
+  // Elimina dinámicamente cualquier widget o iframe inyectado por Netlify
+  const removeNetlifyWidgets = () => {
+    const selectors = [
+      'netlify-drawer',
+      'iframe[src*="netlify"]',
+      '.netlify-badge-promo',
+      '.netlify-badge',
+      '[data-netlify-badge]'
+    ];
+    selectors.forEach(selector => {
+      document.querySelectorAll(selector).forEach(el => el.remove());
+    });
+  };
+
+  // Ejecuta al cargar y observa cambios en el DOM
+  window.addEventListener('DOMContentLoaded', removeNetlifyWidgets);
+  const observer = new MutationObserver(removeNetlifyWidgets);
+  observer.observe(document.body || document.documentElement, { childList: true, subtree: true });
+</script>
 </html>
