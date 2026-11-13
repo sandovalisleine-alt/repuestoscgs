@@ -48,7 +48,7 @@ async function obtenerPromosSupabase() {
   }
 }
 
-// Cargar logos de marcas desde Supabase para el carrusel inferior (CORREGIDO Y AMPLIFICADO)
+// Cargar logos de marcas desde Supabase para el carrusel inferior
 async function obtenerMarcasSupabase() {
   const secCarrusel = document.getElementById('sec-carrusel-marcas');
   const tanda1 = document.getElementById('carrusel-marcas-tanda1');
@@ -79,7 +79,7 @@ async function obtenerMarcasSupabase() {
     });
 
     if (tanda1) tanda1.innerHTML = htmlLogos;
-    if (tanda2) tanda2.innerHTML = htmlLogos; // Repetido para que el ciclo sea infinito sin cortes
+    if (tanda2) tanda2.innerHTML = htmlLogos;
 
   } catch (err) {
     console.error('Error al obtener marcas:', err);
@@ -163,22 +163,27 @@ function cargarProductos(lista) {
 
   lista.forEach(prod => {
     contenedor.innerHTML += `
-      <div class="card-producto bg-white rounded-xl shadow-sm hover:shadow-md border border-zinc-200 overflow-hidden flex flex-col justify-between">
-        <img src="${prod.imagen}" alt="${prod.nombre}" class="w-full h-48 object-cover bg-zinc-100">
-        <div class="p-4 flex-1 flex flex-col justify-between">
-          <div>
+      <div class="card-producto bg-white rounded-xl shadow-sm hover:shadow-md border border-zinc-200 overflow-hidden flex flex-col justify-between transition duration-200">
+        <a href="producto.html?id=${prod.id}" class="block group">
+          <div class="relative overflow-hidden">
+            <img src="${prod.imagen}" alt="${prod.nombre}" class="w-full h-48 object-cover bg-zinc-100 group-hover:scale-105 transition duration-300">
+            <span class="absolute bottom-2 right-2 bg-black/75 text-white text-[10px] px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition">
+              Ver ficha
+            </span>
+          </div>
+          <div class="p-4 pb-2">
             <span class="text-[10px] font-bold text-zinc-600 bg-zinc-100 border border-zinc-200 px-2 py-0.5 rounded">${prod.codigo}</span>
-            <h4 class="font-bold text-zinc-900 text-base mt-2">${prod.nombre}</h4>
-            <p class="text-zinc-500 text-xs mt-1">${prod.compatibilidad || ''}</p>
+            <h4 class="font-bold text-zinc-900 text-base mt-2 group-hover:text-blue-600 transition">${prod.nombre}</h4>
+            <p class="text-zinc-500 text-xs mt-1 line-clamp-3">${prod.compatibilidad || ''}</p>
           </div>
-          <div class="mt-4 pt-3 border-t border-zinc-100 flex justify-end items-center">
-            <button 
-              onclick="consultarProducto('${prod.nombre} (${prod.codigo})')" 
-              class="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg flex items-center justify-center gap-2 text-xs font-semibold transition"
-            >
-              <i class="fa-brands fa-whatsapp text-sm"></i> Cotizar por WhatsApp
-            </button>
-          </div>
+        </a>
+        <div class="p-4 pt-3 border-t border-zinc-100 flex justify-end items-center">
+          <button 
+            onclick="consultarProducto('${prod.nombre} (${prod.codigo})')" 
+            class="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg flex items-center justify-center gap-2 text-xs font-semibold transition"
+          >
+            <i class="fa-brands fa-whatsapp text-sm"></i> Cotizar por WhatsApp
+          </button>
         </div>
       </div>
     `;
@@ -257,7 +262,7 @@ function consultarProducto(nombreProducto) {
 document.addEventListener('DOMContentLoaded', () => {
   obtenerPromosSupabase();
   obtenerProductosSupabase();
-  obtenerMarcasSupabase(); // <--- Carga marcas para el carrusel inferior
+  obtenerMarcasSupabase();
   iniciarRotacionAutomatica();
 
   const buscador = document.getElementById('input-buscador');
