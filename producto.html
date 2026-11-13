@@ -173,8 +173,8 @@
         document.getElementById('prod-codigo').textContent = prod.codigo;
         document.getElementById('prod-compatibilidad').textContent = prod.compatibilidad || 'Consultar compatibilidad exacta por WhatsApp.';
 
-        document.getElementById('btn-cotizar-directo').onclick = () => {
-          const msg = encodeURIComponent(`Hola Repuestos CGS! Me interesa cotizar: ${prod.nombre} (Código: ${prod.codigo}) - ${window.location.href}`);
+      document.getElementById('btn-cotizar-directo').onclick = () => {
+          const msg = encodeURIComponent(`Hola Repuestos CGS! Me interesa cotizar: ${prod.nombre} (Código: ${prod.codigo})`);
           window.open(`https://wa.me/${NUMERO_WHATSAPP}?text=${msg}`, '_blank');
         };
 
