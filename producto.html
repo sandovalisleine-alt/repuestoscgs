@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detalle del Repuesto - Repuestos CGS</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800 flex flex-col min-h-screen">
+
+  <!-- HEADER -->
+  <header class="bg-black text-white shadow-xl sticky top-0 z-40 border-b border-zinc-800 py-3">
+    <div class="max-w-7xl mx-auto px-4 flex items-center justify-between gap-4">
+      <a href="index.html" class="flex items-center gap-3">
+        <img src="img/logoCGS.jpeg" alt="Repuestos CGS" class="h-11 w-auto rounded">
+      </a>
+
+      <a href="index.html" class="text-xs sm:text-sm text-zinc-300 hover:text-white flex items-center gap-2 transition">
+        <i class="fa-solid fa-arrow-left"></i> Volver al catálogo
+      </a>
+
+      <a id="btn-header-wa" href="#" target="_blank" class="bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm font-semibold px-4 py-2 rounded-xl flex items-center gap-2 transition">
+        <i class="fa-brands fa-whatsapp text-base"></i> <span class="hidden sm:inline">Contactar</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <main class="max-w-7xl mx-auto px-4 py-6 flex-1 w-full">
+    
+    <!-- Ruta de navegación (Breadcrumb estilo Ripley) -->
+    <nav id="breadcrumb" class="text-xs text-zinc-500 mb-6 flex items-center gap-2 flex-wrap">
+      <a href="index.html" class="hover:text-black hover:underline">Inicio</a>
+      <span>›</span>
+      <span id="bread-marca" class="text-zinc-700 font-medium">Cargando...</span>
+      <span>›</span>
+      <span id="bread-categoria" class="text-zinc-500">...</span>
+    </nav>
+
+    <!-- Estado de Carga -->
+    <div id="estado-carga" class="text-center py-20 text-zinc-500">
+      <i class="fa-solid fa-spinner fa-spin text-3xl mb-3 text-zinc-800"></i>
+      <p class="text-sm">Cargando ficha del repuesto...</p>
+    </div>
+
+    <!-- Error si no existe -->
+    <div id="estado-error" class="hidden text-center py-20">
+      <p class="text-zinc-600 font-semibold mb-4">No se encontró el repuesto solicitado.</p>
+      <a href="index.html" class="bg-black text-white px-5 py-2.5 rounded-xl text-sm font-semibold">Volver al catálogo</a>
+    </div>
+
+    <!-- FICHA DEL PRODUCTO (3 Columnas estilo Ripley) -->
+    <div id="ficha-producto" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      
+      <!-- Columna 1: Imagen Ampliada (5 columnas) -->
+      <div class="lg:col-span-5 bg-white rounded-2xl border border-zinc-200 p-6 flex items-center justify-center shadow-sm">
+        <img id="prod-img" src="" alt="" class="max-h-[420px] w-auto object-contain rounded-lg">
+      </div>
+
+      <!-- Columna 2: Datos Técnicos y Compatibilidad (4 columnas) -->
+      <div class="lg:col-span-4 bg-white rounded-2xl border border-zinc-200 p-6 shadow-sm">
+        <span id="prod-marca" class="text-xs font-bold uppercase tracking-wider text-zinc-500"></span>
+        <h1 id="prod-titulo" class="text-xl sm:text-2xl font-extrabold text-zinc-900 mt-1 leading-snug"></h1>
+        
+        <p class="text-xs text-zinc-500 mt-2">
+          Código OEM: <strong id="prod-codigo" class="text-zinc-800 bg-zinc-100 px-2 py-0.5 rounded border border-zinc-200"></strong>
+        </p>
+
+        <p class="text-xs text-zinc-500 mt-1">
+          Vendido por: <span class="text-blue-600 font-semibold">Repuestos CGS</span>
+        </p>
+
+        <hr class="my-4 border-zinc-100">
+
+        <div>
+          <h2 class="text-xs font-bold uppercase tracking-wider text-zinc-700 mb-2">
+            Compatibilidad y Especificaciones
+          </h2>
+          <div id="prod-compatibilidad" class="text-sm text-zinc-700 bg-slate-50 p-4 rounded-xl border border-zinc-200 leading-relaxed whitespace-pre-line"></div>
+        </div>
+      </div>
+
+      <!-- Columna 3: Caja de Cotización y Opciones de Entrega (3 columnas) -->
+      <div class="lg:col-span-3 bg-white rounded-2xl border border-zinc-200 p-6 shadow-sm flex flex-col gap-4">
+        <div>
+          <span class="inline-block bg-green-100 text-green-800 text-[11px] font-bold px-2.5 py-0.5 rounded-full">
+            Disponible para cotizar
+          </span>
+          <p class="text-xs text-zinc-500 mt-2">Consulta precio actualizado y disponibilidad inmediata con nuestros asesores.</p>
+        </div>
+
+        <button id="btn-cotizar-directo" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 text-sm shadow-md transition">
+          <i class="fa-brands fa-whatsapp text-lg"></i> Cotizar por WhatsApp
+        </button>
+
+        <button id="btn-copiar-enlace" onclick="copiarEnlaceProducto()" class="w-full bg-zinc-100 hover:bg-zinc-200 text-zinc-800 font-semibold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 text-xs transition">
+          <i class="fa-solid fa-share-nodes"></i> Copiar enlace del producto
+        </button>
+
+        <hr class="border-zinc-100">
+
+        <!-- Opciones de Entrega (estilo Ripley) -->
+        <div class="space-y-3">
+          <h3 class="text-xs font-bold text-zinc-800 uppercase tracking-wider">Opciones de entrega</h3>
+          
+          <div class="flex items-start gap-3">
+            <i class="fa-solid fa-truck-fast text-zinc-600 mt-1"></i>
+            <div>
+              <p class="text-xs font-bold text-zinc-800">Despacho a domicilio</p>
+              <p class="text-[11px] text-zinc-500">Dentro de Santiago (consultar tarifa) y envíos a todo Chile.</p>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-3">
+            <i class="fa-solid fa-warehouse text-zinc-600 mt-1"></i>
+            <div>
+              <p class="text-xs font-bold text-zinc-800">Retiro en bodega</p>
+              <p class="text-[11px] text-zinc-500">Santiago, Chile. Coordinar horario previo por WhatsApp.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-black text-white pt-10 pb-8 border-t border-zinc-800 mt-12">
+    <div class="max-w-6xl mx-auto px-4 text-center text-xs text-zinc-500">
+      <p>© 2026 Repuestos CGS - Tienda online.</p>
+    </div>
+  </footer>
+
+  <!-- SCRIPT DE CARGA DEL PRODUCTO -->
+  <script>
+    const NUMERO_WHATSAPP = "56951681896";
+    const SUPABASE_URL = 'https://gjtwlmpucylosttexfdq.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdqdHdsbXB1Y3lsb3N0dGV4ZmRxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQyNDQ3MTgsImV4cCI6MjEwOTgyMDcxOH0.3IJ60M0T5_U-xTt4JCmXkwDy61yDOAEjqUISoRA4GV0';
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    async function cargarDetalleProducto() {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+
+      const msgGeneral = encodeURIComponent('Hola Repuestos CGS! Quisiera hacer una consulta general.');
+      document.getElementById('btn-header-wa').href = `https://wa.me/${NUMERO_WHATSAPP}?text=${msgGeneral}`;
+
+      if (!id) {
+        mostrarError();
+        return;
+      }
+
+      try {
+        const { data: prod, error } = await _supabase
+          .from('productos')
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        if (error || !prod) throw error;
+
+        // Llenar datos en pantalla
+        document.title = `${prod.nombre} (${prod.codigo}) - Repuestos CGS`;
+        document.getElementById('bread-marca').textContent = prod.marca || 'Repuestos';
+        document.getElementById('bread-categoria').textContent = prod.categoria || 'Catálogo';
+        
+        document.getElementById('prod-img').src = prod.imagen;
+        document.getElementById('prod-img').alt = prod.nombre;
+        document.getElementById('prod-marca').textContent = `${prod.marca || 'VAG'} • ${prod.categoria || ''}`;
+        document.getElementById('prod-titulo').textContent = prod.nombre;
+        document.getElementById('prod-codigo').textContent = prod.codigo;
+        document.getElementById('prod-compatibilidad').textContent = prod.compatibilidad || 'Consultar compatibilidad exacta por WhatsApp.';
+
+        document.getElementById('btn-cotizar-directo').onclick = () => {
+          const msg = encodeURIComponent(`Hola Repuestos CGS! Me interesa cotizar: ${prod.nombre} (Código: ${prod.codigo}) - ${window.location.href}`);
+          window.open(`https://wa.me/${NUMERO_WHATSAPP}?text=${msg}`, '_blank');
+        };
+
+        document.getElementById('estado-carga').classList.add('hidden');
+        document.getElementById('ficha-producto').classList.remove('hidden');
+
+      } catch (err) {
+        console.error(err);
+        mostrarError();
+      }
+    }
+
+    function mostrarError() {
+      document.getElementById('estado-carga').classList.add('hidden');
+      document.getElementById('estado-error').classList.remove('hidden');
+    }
+
+    function copiarEnlaceProducto() {
+      navigator.clipboard.writeText(window.location.href);
+      const btn = document.getElementById('btn-copiar-enlace');
+      btn.innerHTML = '<i class="fa-solid fa-check text-green-600"></i> ¡Enlace copiado!';
+      setTimeout(() => {
+        btn.innerHTML = '<i class="fa-solid fa-share-nodes"></i> Copiar enlace del producto';
+      }, 2500);
+    }
+
+    document.addEventListener('DOMContentLoaded', cargarDetalleProducto);
+  </script>
+</body>
+</html>
